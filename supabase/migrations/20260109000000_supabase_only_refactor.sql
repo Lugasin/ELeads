@@ -221,3 +221,35 @@ DROP TRIGGER IF EXISTS trigger_enforce_signal_limits ON signals;
 CREATE TRIGGER trigger_enforce_signal_limits
   BEFORE INSERT ON signals
   FOR EACH ROW EXECUTE FUNCTION enforce_signal_limits();
+
+-- =====================================================
+-- 8. SIGNAL SNAPSHOT AUTOMATION (change detection)
+-- =====================================================
+
+-- Function to create a snapshot when a signal is inserted or updated
+CREATE OR REPLACE FUNCTION create_signal_snapshot()
+RETURNS TRIGGER AS $$
+DECLARE
+  new_hash TEXT;
+  last_hash TEXT;
+BEGIN
+  -- Compute a simple content hash of the important signal fields
+  new_hash := md5(coalesce(NEW.entity_name,'') || '|' || coalesce(NEW.observed_title,'') || '|' || coalesce(NEW.observed_company,'') || '|' || coalesce(NEW.observed_location,'') || '|' || coalesce(NEW.observed_contact,''));
+
+  -- Get last snapshot hash for this signal (if any)
+  SELECT hash INTO last_hash FROM signal_snapshots WHERE signal_id = NEW.id ORDER BY captured_at DESC LIMIT 1;
+
+  -- If no snapshot exists or the content changed, insert a new snapshot
+  IF last_hash IS NULL OR new_hash <> last_hash THEN
+    INSERT INTO signal_snapshots(signal_id, hash, captured_at) VALUES (NEW.id, new_hash, now());
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Create trigger to run snapshot automation after insert or update
+DROP TRIGGER IF EXISTS trigger_create_signal_snapshot ON signals;
+CREATE TRIGGER trigger_create_signal_snapshot
+  AFTER INSERT OR UPDATE ON signals
+  FOR EACH ROW EXECUTE FUNCTION create_signal_snapshot();
