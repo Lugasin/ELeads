@@ -1,6 +1,6 @@
 export type UserRole = 'free' | 'pro' | 'enterprise' | 'admin';
 
-// Signal Source Types
+// Signal Source Types - User-provided input
 export interface SignalSource {
   id: string;
   user_id: string;
@@ -9,7 +9,7 @@ export interface SignalSource {
   created_at: string;
 }
 
-// Signal Types
+// Signal Types - Extracted observations
 export interface Signal {
   id: string;
   user_id: string;
@@ -28,9 +28,18 @@ export interface Signal {
   // Relations
   signal_sources?: SignalSource;
   ai_analysis?: AIAnalysis[];
+  signal_snapshots?: SignalSnapshot[];
 }
 
-// AI Analysis Types
+// Signal Snapshot - Captures point-in-time state for change detection
+export interface SignalSnapshot {
+  id: string;
+  signal_id: string;
+  hash: string; // Hash of signal data to detect changes
+  captured_at: string;
+}
+
+// AI Analysis Types - Optional interpretation
 export interface AIAnalysis {
   id: string;
   signal_id: string;
@@ -50,26 +59,30 @@ export interface User {
   created_at?: string;
 }
 
-// Role Permissions (Updated for signals)
+// Role Permissions - Based on capacity + continuity
 export const ROLE_PERMISSIONS = {
   free: {
-    maxSignalsPerMonth: 10,
+    maxSignalsPerMonth: 20,
     canRunAIAnalysis: false,
-    canExport: true,
+    canExport: false,
+    canMonitorChanges: false,
   },
   pro: {
-    maxSignalsPerMonth: 500,
+    maxSignalsPerMonth: 1000,
     canRunAIAnalysis: true,
     canExport: true,
+    canMonitorChanges: true,
   },
   enterprise: {
     maxSignalsPerMonth: -1, // unlimited
     canRunAIAnalysis: true,
     canExport: true,
+    canMonitorChanges: true,
   },
   admin: {
     maxSignalsPerMonth: -1, // unlimited
     canRunAIAnalysis: true,
     canExport: true,
+    canMonitorChanges: true,
   }
 };
