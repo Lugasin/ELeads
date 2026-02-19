@@ -10,7 +10,7 @@ A signal intelligence platform that extracts business signals from public inform
 
 **Paste public information → Extract signals → Analyze → Monitor over time → Assist outreach.**
 
-This platform does NOT "find leads." It analyzes publicly available information you provide and extracts observable business signals for sales and business development teams.
+This platform does NOT "find leads." It analyzes publicly available information you provide and extracts observable business signals for sales and business development teams. We focus on observable, time-stamped signals — not inferred contact lists.
 
 ## Architecture
 
@@ -33,9 +33,9 @@ This platform does NOT "find leads." It analyzes publicly available information 
 - Outreach assistance with email drafts
 
 ### Tier-Based Usage
-- **Free**: 10 signals/month
-- **Pro**: 500 signals/month + AI analysis
-- **Enterprise**: Unlimited + monitoring
+- **Free**: 20 signals total (no history)
+- **Pro**: 1,000 signals + AI analysis and history
+- **Enterprise**: Unlimited + monitoring and alerts
 
 ## Compliance & Safety
 

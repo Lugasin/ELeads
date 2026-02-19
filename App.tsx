@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Signal, SignalSource, User } from './types';
+import { Signal, SignalSource, User, ROLE_PERMISSIONS } from './types';
 import SignalDashboard from './components/SignalDashboard';
 import SignalTable from './components/SignalTable';
 import SignalDetail from './components/SignalDetail';
@@ -20,7 +20,7 @@ const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [signals, setSignals] = useState<Signal[]>([]);
   const [signalSources, setSignalSources] = useState<SignalSource[]>([]);
-  const [monthlySignalCount, setMonthlySignalCount] = useState<number>(0);
+  const [signalCount, setSignalCount] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<AppTab>('auth');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
@@ -90,7 +90,7 @@ const App: React.FC = () => {
       if (user.role !== 'free') {
         setActiveTab('dashboard');
         fetchSignals();
-        fetchMonthlyCount();
+        fetchSignalCount();
       }
     }
   };
@@ -100,9 +100,13 @@ const App: React.FC = () => {
     setSignals(data);
   };
 
-  const fetchMonthlyCount = async () => {
-    const count = await getMonthlySignalCount();
-    setMonthlySignalCount(count);
+  const fetchSignalCount = async () => {
+    try {
+      const count = await (await import('./services/supabase')).getUserSignalCount();
+      setSignalCount(count || 0);
+    } catch (err) {
+      console.error('Failed to fetch signal count', err);
+    }
   };
 
   const handleAddSource = async (type: 'url' | 'pasted_text', value: string) => {
@@ -200,7 +204,7 @@ const App: React.FC = () => {
             <h1 className="text-xl font-semibold text-gray-900">E-Place Intel Engine</h1>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">
-                {monthlySignalCount} signals this month
+                {signalCount} signals stored
               </span>
               <button
                 onClick={() => setShowHelp(true)}
@@ -259,7 +263,7 @@ const App: React.FC = () => {
         {activeTab === 'dashboard' && (
           <SignalDashboard
             signals={signals}
-            monthlyCount={monthlySignalCount}
+            totalCount={signalCount}
             userRole={currentUser?.role || 'free'}
           />
         )}
@@ -277,7 +281,10 @@ const App: React.FC = () => {
           <SourceInput
             onSubmit={handleAddSource}
             isProcessing={isProcessing}
-            canCreateSignal={monthlySignalCount < (currentUser?.role === 'free' ? 10 : currentUser?.role === 'pro' ? 500 : 999999)}
+            canCreateSignal={
+              (currentUser && ROLE_PERMISSIONS[currentUser.role].maxSignalsPerMonth === -1) ||
+              (currentUser ? signalCount < ROLE_PERMISSIONS[currentUser.role].maxSignalsPerMonth : false)
+            }
           />
         )}
 

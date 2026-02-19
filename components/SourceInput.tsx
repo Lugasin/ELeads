@@ -32,7 +32,7 @@ const SourceInput: React.FC<SourceInputProps> = ({ onSubmit, isProcessing, canCr
           {!canCreateSignal && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
               <p className="text-yellow-800">
-                You've reached your monthly signal limit. Upgrade your plan to extract more signals.
+                You've reached your signal limit for your plan. Upgrade to extract and retain more signals.
               </p>
             </div>
           )}

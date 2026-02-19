@@ -134,6 +134,20 @@ export const getMonthlySignalCount = async (): Promise<number> => {
   return count || 0;
 };
 
+// Total signals for current user (all-time)
+export const getUserSignalCount = async (): Promise<number> => {
+  const user = (await supabase.auth.getUser()).data.user;
+  if (!user) return 0;
+
+  const { count, error } = await supabase
+    .from('signals')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id);
+
+  if (error) return 0;
+  return count || 0;
+};
+
 export const canCreateSignal = async (): Promise<boolean> => {
   const { data, error } = await supabase.rpc('can_create_signal', {
     user_uuid: (await supabase.auth.getUser()).data.user?.id

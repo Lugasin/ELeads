@@ -3,26 +3,26 @@ import { Signal } from '../types';
 
 interface SignalDashboardProps {
   signals: Signal[];
-  monthlyCount: number;
+  totalCount: number;
   userRole: string;
 }
 
-const SignalDashboard: React.FC<SignalDashboardProps> = ({ signals, monthlyCount, userRole }) => {
+const SignalDashboard: React.FC<SignalDashboardProps> = ({ signals, totalCount, userRole }) => {
   const recentSignals = signals.slice(0, 5);
   const totalSignals = signals.length;
 
   const getRoleLimit = (role: string) => {
     switch (role) {
-      case 'free': return 10;
-      case 'pro': return 500;
+      case 'free': return 20;
+      case 'pro': return 1000;
       case 'enterprise': return -1; // unlimited
       case 'admin': return -1;
-      default: return 10;
+      default: return 20;
     }
   };
 
   const limit = getRoleLimit(userRole);
-  const usagePercentage = limit > 0 ? (monthlyCount / limit) * 100 : 0;
+  const usagePercentage = limit > 0 ? (totalCount / limit) * 100 : 0;
 
   return (
     <div className="space-y-6">
@@ -39,10 +39,10 @@ const SignalDashboard: React.FC<SignalDashboardProps> = ({ signals, monthlyCount
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">
-                    Signals This Month
+                    Signals
                   </dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {monthlyCount} {limit > 0 ? `/ ${limit}` : ''}
+                    {totalCount} {limit > 0 ? `/ ${limit}` : ''}
                   </dd>
                 </dl>
               </div>

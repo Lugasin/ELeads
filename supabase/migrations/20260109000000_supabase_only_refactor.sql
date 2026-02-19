@@ -176,13 +176,13 @@ BEGIN
   -- Get user role
   SELECT role INTO user_role FROM profiles WHERE id = user_uuid;
 
-  -- Get current month's signal count
-  SELECT get_monthly_signal_count(user_uuid) INTO signal_count;
+  -- Get user's total signal count (all-time)
+  SELECT COUNT(*) INTO signal_count FROM signals WHERE user_id = user_uuid;
 
-  -- Check limits based on role
+  -- Check limits based on role (total signals)
   CASE user_role
-    WHEN 'free' THEN RETURN signal_count < 10;
-    WHEN 'pro' THEN RETURN signal_count < 500;
+    WHEN 'free' THEN RETURN signal_count < 20;
+    WHEN 'pro' THEN RETURN signal_count < 1000;
     WHEN 'enterprise' THEN RETURN TRUE;
     WHEN 'admin' THEN RETURN TRUE;
     ELSE RETURN FALSE;
