@@ -1,3 +1,8 @@
+/**
+ * @deprecated This component is part of the legacy lead-based architecture.
+ * Use SignalTable instead for signals-only architecture.
+ * To be removed in v2.0
+ */
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Lead, LeadStatus } from '../types';

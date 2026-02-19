@@ -1,3 +1,8 @@
+/**
+ * @deprecated This component is part of the legacy lead-based architecture.
+ * Use SignalDetail instead for signals-only architecture.
+ * To be removed in v2.0
+ */
 
 import React, { useState } from 'react';
 import { Lead, LeadStatus, ROLE_PERMISSIONS, UserRole, SignalType } from '../types';

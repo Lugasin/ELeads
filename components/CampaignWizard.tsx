@@ -1,3 +1,8 @@
+/**
+ * @deprecated This component is part of the legacy scraping/campaign architecture.
+ * Use SourceInput instead for signals-only architecture.
+ * To be removed in v2.0
+ */
 
 import React, { useState } from 'react';
 import { LeadSource, DEFAULT_SOURCES } from '../types';

@@ -1,3 +1,11 @@
+/**
+ * @deprecated This service was part of the legacy architecture.
+ * Signal extraction and analysis are now handled by Supabase Edge Functions:
+ * - supabase/functions/extract-signals/
+ * - supabase/functions/analyze-signal/
+ * 
+ * To be removed in v2.0
+ */
 
 import { GoogleGenAI, Type } from "@google/genai";
 import { BusinessEntity, RelationshipStatus, SignalType, Lead, LeadStatus } from "../types";

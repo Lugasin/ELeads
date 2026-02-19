@@ -3,14 +3,18 @@ import React, { useState, useEffect } from 'react';
 import { User } from '../types';
 
 interface ProfilePageProps {
-  user: User;
-  onUpdate: (user: User) => void;
-  allUsers: User[];
-  onSwitchUser: (user: User) => void;
-  onAddUser: (user: User) => void;
+  user: User | null;
 }
 
-const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUpdate, allUsers, onSwitchUser, onAddUser }) => {
+const ProfilePage: React.FC<ProfilePageProps> = ({ user }) => {
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <p className="text-gray-500">Please log in to view your profile.</p>
+      </div>
+    );
+  }
+
   const [formData, setFormData] = useState<User>(user);
   const [isEditing, setIsEditing] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -41,14 +45,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUpdate, allUsers, onS
 
   const handleSave = async () => {
     if (!validateEmail(formData.email)) {
-      setEmailError("IDENTITY_FORMAT_INVALID: Please provide a valid email coordinate.");
+      setEmailError("Please provide a valid email address.");
       return;
     }
     
     setEmailError(null);
     setIsSyncing(true);
     await new Promise(resolve => setTimeout(resolve, 800));
-    onUpdate(formData);
+    // Note: Profile updates would be handled via updateProfile() from supabase service
     setIsEditing(false);
     setIsSyncing(false);
   };
@@ -67,33 +71,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUpdate, allUsers, onS
     setTimeout(() => setCopyFeedback(false), 2000);
   };
 
-  const generateTestUser = () => {
-    // Fixed: Updated roles to match UserRole type definition (lowercase 'admin', 'pro', 'enterprise')
-    const roles: User['role'][] = ['admin', 'pro', 'enterprise'];
-    const territories = ['Lusaka South', 'Ndola Central', 'Kitwe Industrial', 'Livingstone Hub'];
-    const names = ['Banda M.', 'Lungu C.', 'Chanda D.', 'Sampa B.'];
-    const randomName = names[Math.floor(Math.random() * names.length)];
-    const randomRole = roles[Math.floor(Math.random() * roles.length)];
-    const randomTerritory = territories[Math.floor(Math.random() * territories.length)];
-    const id = `u-${Math.random().toString(36).substr(2, 5)}`;
-    
-    // Fix: Added missing 'company_name' and 'is_approved' required by the User interface.
-    const newUser: User = {
-      id,
-      name: `${randomName} (Test)`,
-      email: `${randomName.toLowerCase().replace(' ', '.')}@eplace.zm`,
-      role: randomRole,
-      company_name: 'E-Place Simulation Hub',
-      company: 'E-Place Simulation Hub',
-      avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`,
-      territory: randomTerritory,
-      is_approved: true
-    };
-    
-    onAddUser(newUser);
-  };
-
-  // Fixed: Updated to check for lowercase 'admin' consistent with UserRole type
   const isAdmin = user.role === 'admin';
 
   return (
@@ -150,7 +127,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUpdate, allUsers, onS
           </div>
           <div className="space-y-1 relative z-10">
             <h3 className="text-2xl md:text-3xl font-black text-white font-display tracking-tight">{user.name}</h3>
-            <p className="text-[9px] font-black text-indigo-400 uppercase tracking-[0.3em]">{user.role} • {user.company}</p>
+            <p className="text-[9px] font-black text-indigo-400 uppercase tracking-[0.3em]">{user.role} • {user.company_name || 'E-Place'}</p>
           </div>
         </div>
 
@@ -187,8 +164,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUpdate, allUsers, onS
                 type="text" 
                 disabled={!isEditing}
                 className="w-full px-6 py-4 bg-white text-slate-900 rounded-xl md:rounded-2xl text-xs md:text-sm font-black outline-none focus:ring-4 focus:ring-indigo-500/30 transition-all disabled:opacity-50 shadow-lg"
-                value={formData.company}
-                onChange={e => setFormData({...formData, company: e.target.value})}
+                value={formData.company_name || ''}
+                onChange={e => setFormData({...formData, company_name: e.target.value})}
                />
             </div>
             <div className="space-y-3 md:col-span-2">
@@ -211,54 +188,18 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUpdate, allUsers, onS
         </div>
       </div>
 
-      <div className={`glass rounded-[2.5rem] md:rounded-[3.5rem] p-8 md:p-14 space-y-10 relative overflow-hidden transition-all duration-700 ${!isAdmin ? 'blur-md opacity-40 grayscale pointer-events-none' : ''}`}>
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 relative z-10">
-          <div className="space-y-1 text-center sm:text-left">
-            <h4 className="text-[9px] font-black text-fuchsia-500 uppercase tracking-[0.3em]">Simulation Matrix</h4>
-            <p className="text-xl md:text-2xl font-black text-white font-display">Intelligence Team Nodes</p>
-          </div>
-          {isAdmin && (
-            <button 
-              onClick={generateTestUser}
-              className="w-full sm:w-auto px-8 py-4 bg-fuchsia-600/10 border border-fuchsia-600/30 text-fuchsia-400 rounded-xl md:rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-fuchsia-600 hover:text-white transition-all shadow-lg"
-            >
-              Generate Node
-            </button>
-          )}
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8 relative z-10">
-          {allUsers.map((member) => (
-            <div 
-              key={member.id} 
-              className={`p-6 md:p-10 rounded-[2rem] md:rounded-[2.5rem] border transition-all duration-500 group relative overflow-hidden ${
-                user.id === member.id ? 'bg-indigo-600/20 border-indigo-500 shadow-xl' : 'bg-white/5 border-white/5 hover:border-white/20'
-              }`}
-            >
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className="w-14 h-14 md:w-20 md:h-20 rounded-xl md:rounded-2xl bg-slate-900 flex items-center justify-center border-2 border-white/5 overflow-hidden group-hover:scale-105 transition-transform">
-                  {/* Fixed: renamed avatarUrl to avatar_url */}
-                  <img src={member.avatar_url} alt={member.name} className="w-full h-full object-cover" />
-                </div>
-                <div>
-                  <h5 className="font-black text-white text-sm md:text-lg tracking-tight truncate max-w-[120px]">{member.name}</h5>
-                  <p className="text-[8px] md:text-[9px] font-black text-slate-500 uppercase tracking-widest">{member.role}</p>
-                </div>
-                <div className="w-full pt-3 border-t border-white/5">
-                  {(user.id !== member.id && isAdmin) && (
-                    <button 
-                      onClick={() => onSwitchUser(member)}
-                      className="mt-2 py-2.5 w-full bg-white/5 hover:bg-white text-slate-400 hover:text-slate-950 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all"
-                    >
-                      Assume
-                    </button>
-                  )}
-                </div>
-              </div>
+      {/* Team Management - Only shows for admins */}
+      {isAdmin && (
+        <div className="glass rounded-[2.5rem] md:rounded-[3.5rem] p-8 md:p-14 space-y-10">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="space-y-1 text-center sm:text-left">
+              <h4 className="text-[9px] font-black text-fuchsia-500 uppercase tracking-[0.3em]">Admin Tools</h4>
+              <p className="text-xl md:text-2xl font-black text-white font-display">Role Management</p>
             </div>
-          ))}
+          </div>
+          <p className="text-gray-400 text-sm">Team management functionality coming soon.</p>
         </div>
-      </div>
+      )}
     </div>
   );
 };
