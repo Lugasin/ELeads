@@ -1,0 +1,8 @@
+
+{
+  "name": "E-Place Intel Engine",
+  "description": "An enterprise-grade, multi-vertical leads intelligence platform featuring AI-powered market discovery, high-fidelity brand asset integration, and strategic outreach automation.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}

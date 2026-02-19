@@ -1,0 +1,2 @@
+-- This migration file is intentionally left empty.
+-- It was created to resolve a migration history issue and can be disregarded.
